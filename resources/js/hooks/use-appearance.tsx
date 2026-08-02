@@ -1,16 +1,6 @@
-import { useSyncExternalStore } from 'react';
+import { type ResolvedAppearance, type Appearance, type UseAppearanceReturn } from '@/types';
 
-export type ResolvedAppearance = 'light' | 'dark';
-export type Appearance = ResolvedAppearance | 'system';
-
-export type UseAppearanceReturn = {
-    readonly appearance: Appearance;
-    readonly resolvedAppearance: ResolvedAppearance;
-    readonly updateAppearance: (mode: Appearance) => void;
-};
-
-const listeners = new Set<() => void>();
-let currentAppearance: Appearance = 'system';
+let currentAppearance: Appearance = 'light';
 
 const prefersDark = (): boolean => {
     if (typeof window === 'undefined') {
@@ -30,15 +20,11 @@ const setCookie = (name: string, value: string, days = 365): void => {
 };
 
 const getStoredAppearance = (): Appearance => {
-    if (typeof window === 'undefined') {
-        return 'system';
-    }
-
-    return (localStorage.getItem('appearance') as Appearance) || 'system';
+    return 'light';
 };
 
 const isDarkMode = (appearance: Appearance): boolean => {
-    return appearance === 'dark' || (appearance === 'system' && prefersDark());
+    return false;
 };
 
 const applyTheme = (appearance: Appearance): void => {
@@ -46,10 +32,8 @@ const applyTheme = (appearance: Appearance): void => {
         return;
     }
 
-    const isDark = isDarkMode(appearance);
-
-    document.documentElement.classList.toggle('dark', isDark);
-    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    document.documentElement.classList.remove('dark');
+    document.documentElement.style.colorScheme = 'light';
 };
 
 const subscribe = (callback: () => void) => {
@@ -75,40 +59,17 @@ export function initializeTheme(): void {
         return;
     }
 
-    if (!localStorage.getItem('appearance')) {
-        localStorage.setItem('appearance', 'system');
-        setCookie('appearance', 'system');
-    }
-
-    currentAppearance = getStoredAppearance();
+    currentAppearance = 'light';
     applyTheme(currentAppearance);
-
-    // Set up system theme change listener
-    mediaQuery()?.addEventListener('change', handleSystemThemeChange);
 }
 
 export function useAppearance(): UseAppearanceReturn {
-    const appearance: Appearance = useSyncExternalStore(
-        subscribe,
-        () => currentAppearance,
-        () => 'system',
-    );
+    const appearance: Appearance = 'light';
 
-    const resolvedAppearance: ResolvedAppearance = isDarkMode(appearance)
-        ? 'dark'
-        : 'light';
+    const resolvedAppearance: ResolvedAppearance = 'light';
 
     const updateAppearance = (mode: Appearance): void => {
-        currentAppearance = mode;
-
-        // Store in localStorage for client-side persistence...
-        localStorage.setItem('appearance', mode);
-
-        // Store in cookie for SSR...
-        setCookie('appearance', mode);
-
-        applyTheme(mode);
-        notify();
+        // Mode light forced
     };
 
     return { appearance, resolvedAppearance, updateAppearance } as const;

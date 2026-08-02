@@ -7,7 +7,9 @@ use App\Enums\UserRole;
 use App\Traits\Auditable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -17,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property UserRole|null $role
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
@@ -33,7 +36,7 @@ class User extends Authenticatable
     use Auditable, HasFactory, Notifiable;
 
     /**
-     * Get the preferences for the user.
+     * Obtenir les préférences de l'utilisateur.
      *
      * @return HasOne<UserPreference, $this>
      */
@@ -43,7 +46,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if the user has a specific role.
+     * Vérifie si l'utilisateur possède un rôle spécifique.
      */
     public function hasRole(UserRole|string $role): bool
     {
@@ -55,7 +58,46 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the attributes that should be cast.
+     * Vérifie si l'utilisateur est un chargeur.
+     */
+    public function isShipper(): bool
+    {
+        return $this->role === UserRole::SHIPPER;
+    }
+
+    /**
+     * Scope pour filtrer uniquement les chargeurs.
+     *
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
+    public function scopeShippers(Builder $query): Builder
+    {
+        return $query->where('role', UserRole::SHIPPER);
+    }
+
+    /**
+     * Les dossiers attribués à cet utilisateur.
+     *
+     * @return HasMany<Folder, $this>
+     */
+    public function folders(): HasMany
+    {
+        return $this->hasMany(Folder::class, 'shipper_id');
+    }
+
+    /**
+     * Alias explicite pour les dossiers attribués au chargeur.
+     *
+     * @return HasMany<Folder, $this>
+     */
+    public function assignedFolders(): HasMany
+    {
+        return $this->folders();
+    }
+
+    /**
+     * Conversion des attributs.
      *
      * @return array<string, string>
      */

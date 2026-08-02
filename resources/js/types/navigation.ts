@@ -1,8 +1,9 @@
 import type { InertiaLinkProps } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
+import type * as React from 'react';
 
 export type BreadcrumbItem = {
-    title: string;
+    title: React.ReactNode;
     href: NonNullable<InertiaLinkProps['href']>;
 };
 

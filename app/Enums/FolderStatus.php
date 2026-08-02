@@ -13,11 +13,19 @@ enum FolderStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::PENDING => 'En attente',
+            self::PENDING => 'Non commencé',
             self::IN_PROGRESS => 'En cours',
             self::OVERDUE => 'En dépassement',
             self::CLOSED => 'Clôturé',
             self::CLOSED_LATE => 'Clôturé en retard',
         };
+    }
+
+    public static function options(): array
+    {
+        return array_map(fn (self $status) => [
+            'value' => $status->value,
+            'label' => $status->label(),
+        ], self::cases());
     }
 }

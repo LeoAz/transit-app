@@ -4,12 +4,13 @@ namespace App\Models;
 
 use App\Enums\ContainerType;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Loading extends Model
 {
-    use Auditable;
+    use Auditable, HasFactory;
 
     /**
      * Get the folder for the loading.

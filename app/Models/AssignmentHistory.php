@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AssignmentHistory extends Model
 {
+    use HasFactory;
     /**
      * Get the folder for this history entry.
      *
@@ -20,21 +22,21 @@ class AssignmentHistory extends Model
     /**
      * Get the previous shipper.
      *
-     * @return BelongsTo<Shipper, $this>
+     * @return BelongsTo<User, $this>
      */
     public function previousShipper(): BelongsTo
     {
-        return $this->belongsTo(Shipper::class, 'previous_shipper_id');
+        return $this->belongsTo(User::class, 'previous_shipper_id');
     }
 
     /**
      * Get the new shipper.
      *
-     * @return BelongsTo<Shipper, $this>
+     * @return BelongsTo<User, $this>
      */
     public function newShipper(): BelongsTo
     {
-        return $this->belongsTo(Shipper::class, 'new_shipper_id');
+        return $this->belongsTo(User::class, 'new_shipper_id');
     }
 
     /**

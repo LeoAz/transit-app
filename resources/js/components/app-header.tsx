@@ -1,13 +1,20 @@
-import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { Bell, CheckCheck, Database, Folder, LayoutGrid, Menu, Users } from 'lucide-react';
+import * as React from 'react';
+import { toast } from 'sonner';
+
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -23,21 +30,26 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
-import { cn, toUrl } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
+import * as folders from '@/routes/folders/index';
+import { index as usersIndex } from '@/routes/users/index';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
 };
+
+interface NotificationItem {
+    id: string | number;
+    title: string;
+    description: string;
+    time: string;
+    read: boolean;
+}
 
 const mainNavItems: NavItem[] = [
     {
@@ -45,18 +57,20 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
-];
-
-const rightNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
+        title: 'Dossiers',
+        href: folders.index.url(),
         icon: Folder,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'Référentiel',
+        href: '/referential/customers',
+        icon: Database,
+    },
+    {
+        title: 'Utilisateurs',
+        href: usersIndex.url(),
+        icon: Users,
     },
 ];
 
@@ -65,15 +79,48 @@ const activeItemStyles =
 
 export function AppHeader({ breadcrumbs = [] }: Props) {
     const page = usePage();
-    const { auth } = page.props;
+    const { auth } = page.props as any;
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
+
+    // Récupération dynamique des notifications depuis props.auth.user.notifications
+    const userNotifications: NotificationItem[] =
+        auth?.user?.notifications || [];
+    const unreadCount = userNotifications.filter((n) => !n.read).length;
+
+    // Action pour tout marquer comme lu
+    const handleMarkAllAsRead = (e: React.MouseEvent) => {
+        e.preventDefault();
+        router.post(
+            '/notifications/mark-all-read',
+            {},
+            {
+                preserveScroll: true,
+                preserveState: true,
+                onSuccess: () => {
+                    toast.success('Toutes les notifications ont été marquées comme lues.');
+                },
+            }
+        );
+    };
+
+    // Action au clic sur une notification individuelle
+    const handleNotificationClick = (notificationId: string | number) => {
+        router.post(
+            `/notifications/${notificationId}/read`,
+            {},
+            {
+                preserveScroll: true,
+                preserveState: true,
+            }
+        );
+    };
 
     return (
         <>
             <div className="border-b border-sidebar-border/80">
                 <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
-                    {/* Mobile Menu */}
+                    {/* Navigation Mobile */}
                     <div className="lg:hidden">
                         <Sheet>
                             <SheetTrigger asChild>
@@ -96,38 +143,19 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
                                 </SheetHeader>
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
-                                    <div className="flex h-full flex-col justify-between text-sm">
-                                        <div className="flex flex-col space-y-4">
-                                            {mainNavItems.map((item) => (
-                                                <Link
-                                                    key={item.title}
-                                                    href={item.href}
-                                                    className="flex items-center space-x-2 font-medium"
-                                                >
-                                                    {item.icon && (
-                                                        <item.icon className="h-5 w-5" />
-                                                    )}
-                                                    <span>{item.title}</span>
-                                                </Link>
-                                            ))}
-                                        </div>
-
-                                        <div className="flex flex-col space-y-4">
-                                            {rightNavItems.map((item) => (
-                                                <a
-                                                    key={item.title}
-                                                    href={toUrl(item.href)}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center space-x-2 font-medium"
-                                                >
-                                                    {item.icon && (
-                                                        <item.icon className="h-5 w-5" />
-                                                    )}
-                                                    <span>{item.title}</span>
-                                                </a>
-                                            ))}
-                                        </div>
+                                    <div className="flex flex-col space-y-4 text-sm">
+                                        {mainNavItems.map((item) => (
+                                            <Link
+                                                key={item.title}
+                                                href={item.href}
+                                                className="flex items-center space-x-2 font-medium"
+                                            >
+                                                {item.icon && (
+                                                    <item.icon className="h-5 w-5" />
+                                                )}
+                                                <span>{item.title}</span>
+                                            </Link>
+                                        ))}
                                     </div>
                                 </div>
                             </SheetContent>
@@ -142,7 +170,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                         <AppLogo />
                     </Link>
 
-                    {/* Desktop Navigation */}
+                    {/* Navigation Desktop */}
                     <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
                         <NavigationMenu className="flex h-full items-stretch">
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
@@ -176,40 +204,110 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                         </NavigationMenu>
                     </div>
 
-                    <div className="ml-auto flex items-center space-x-2">
-                        <div className="relative flex items-center space-x-1">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="group h-9 w-9 cursor-pointer"
+                    {/* Actions de droite : Notifications & Menu Profil */}
+                    <div className="ml-auto flex items-center space-x-3">
+                        {/* Menu Déroulant des Notifications */}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="relative size-9 rounded-full"
+                                >
+                                    <Bell className="size-5 opacity-80" />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute top-1 right-1 flex size-2">
+                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                                            <span className="relative inline-flex size-2 rounded-full bg-red-500"></span>
+                                        </span>
+                                    )}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align="end"
+                                className="w-80 p-0"
                             >
-                                <Search className="!size-5 opacity-80 group-hover:opacity-100" />
-                            </Button>
-                            <div className="ml-1 hidden gap-1 lg:flex">
-                                {rightNavItems.map((item) => (
-                                    <Tooltip key={item.title}>
-                                        <TooltipTrigger>
-                                            <a
-                                                href={toUrl(item.href)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="group inline-flex h-9 w-9 items-center justify-center rounded-md bg-transparent p-0 text-sm font-medium text-accent-foreground ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
-                                            >
-                                                <span className="sr-only">
-                                                    {item.title}
-                                                </span>
-                                                {item.icon && (
-                                                    <item.icon className="size-5 opacity-80 group-hover:opacity-100" />
+                                <div className="flex items-center justify-between p-3 border-b">
+                                    <div className="flex items-center gap-2">
+                                        <DropdownMenuLabel className="p-0 text-sm font-semibold">
+                                            Notifications
+                                        </DropdownMenuLabel>
+                                        {unreadCount > 0 && (
+                                            <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
+                                                {unreadCount}
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    {unreadCount > 0 && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={handleMarkAllAsRead}
+                                            className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground gap-1"
+                                        >
+                                            <CheckCheck className="size-3.5" />
+                                            Tout marquer comme lu
+                                        </Button>
+                                    )}
+                                </div>
+
+                                <div className="max-h-80 overflow-y-auto divide-y">
+                                    {userNotifications.length > 0 ? (
+                                        userNotifications.map((n) => (
+                                            <DropdownMenuItem
+                                                key={n.id}
+                                                onClick={() => handleNotificationClick(n.id)}
+                                                className={cn(
+                                                    'flex flex-col items-start gap-1 p-3 cursor-pointer focus:bg-accent transition-colors',
+                                                    !n.read
+                                                        ? 'bg-primary/5 hover:bg-primary/10' // Mise en évidence si non lue
+                                                        : 'opacity-75'
                                                 )}
-                                            </a>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>{item.title}</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                ))}
-                            </div>
-                        </div>
+                                            >
+                                                <div className="flex w-full items-center justify-between gap-2">
+                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                        {/* Puce visuelle bleue pour les non lues */}
+                                                        {!n.read && (
+                                                            <span className="size-2 rounded-full bg-blue-600 shrink-0" />
+                                                        )}
+                                                        <span
+                                                            className={cn(
+                                                                'text-xs truncate',
+                                                                !n.read
+                                                                    ? 'font-bold text-foreground'
+                                                                    : 'font-medium text-muted-foreground'
+                                                            )}
+                                                        >
+                                                            {n.title}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-[10px] text-muted-foreground shrink-0 font-mono">
+                                                        {n.time}
+                                                    </span>
+                                                </div>
+                                                <p
+                                                    className={cn(
+                                                        'text-xs line-clamp-2 pl-3.5',
+                                                        !n.read
+                                                            ? 'text-foreground/90 font-normal'
+                                                            : 'text-muted-foreground'
+                                                    )}
+                                                >
+                                                    {n.description}
+                                                </p>
+                                            </DropdownMenuItem>
+                                        ))
+                                    ) : (
+                                        <div className="p-4 text-center text-xs text-muted-foreground">
+                                            Aucune notification pour le moment.
+                                        </div>
+                                    )}
+                                </div>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        {/* Menu Utilisateur */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
@@ -236,7 +334,9 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                     </div>
                 </div>
             </div>
-            {breadcrumbs.length > 1 && (
+
+            {/* Breadcrumbs */}
+            {breadcrumbs.length > 0 && (
                 <div className="flex w-full border-b border-sidebar-border/70">
                     <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
