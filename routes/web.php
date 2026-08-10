@@ -13,7 +13,9 @@ use App\Http\Controllers\VesselController;
 use Illuminate\Support\Facades\Route;
 
 // --- Public Routes ---
-Route::inertia('/', 'welcome')->name('home');
+Route::get('/', function () {
+    return redirect()->route('login');
+})->middleware('guest')->name('home');
 
 // --- Authenticated Routes ---
 Route::middleware(['auth', 'verified'])->group(function () {
