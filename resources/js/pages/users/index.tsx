@@ -6,6 +6,11 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { DataTable } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { dashboard } from "@/routes";
 import { destroy as destroyUser, index as usersIndex } from "@/routes/users";
 import type { User } from "@/types";
@@ -37,70 +42,115 @@ export default function UsersIndex({ users, roles }: UsersIndexProps) {
         }
     };
 
+    const getRoleBadgeVariant = (role: string) => {
+        switch (role) {
+            case "admin":
+                return "default";
+            case "supervisor":
+                return "secondary";
+            case "shipper":
+                return "outline";
+            case "entry_agent":
+                return "outline";
+            default:
+                return "outline";
+        }
+    };
+
+    const getRoleBadgeClass = (role: string) => {
+        switch (role) {
+            case "admin":
+                return "bg-red-500/10 text-red-700 border-red-200 dark:bg-red-500/20 dark:text-red-400 dark:border-red-900";
+            case "supervisor":
+                return "bg-blue-500/10 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-900";
+            case "shipper":
+                return "bg-green-500/10 text-green-700 border-green-200 dark:bg-green-500/20 dark:text-green-400 dark:border-green-900";
+            case "entry_agent":
+                return "bg-orange-500/10 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:border-orange-900";
+            default:
+                return "";
+        }
+    };
+
     const columns = [
         {
-            header: "Code",
-            accessorKey: "code",
+            header: 'Code',
+            accessorKey: 'code',
             sortable: true,
         },
         {
-            header: "Nom",
-            accessorKey: "name",
+            header: 'Nom',
+            accessorKey: 'name',
             sortable: true,
         },
         {
-            header: "Email",
-            accessorKey: "email",
+            header: 'Email',
+            accessorKey: 'email',
             sortable: true,
         },
         {
-            header: "Téléphone",
-            accessorKey: "phone",
+            header: 'Téléphone',
+            accessorKey: 'phone',
         },
         {
-            header: "Zone",
-            accessorKey: "zone",
-            cell: (user: User) => user.zone || "-",
+            header: 'Zone',
+            accessorKey: 'zone',
+            cell: (user: User) => user.zone || '-',
         },
         {
-            header: "Rôle",
-            accessorKey: "role",
+            header: 'Rôle',
+            accessorKey: 'role',
             sortable: true,
             cell: (user: User) => {
-                const label = roles.find((r) => r.value === user.role)?.label || user.role;
+                const label =
+                    roles.find((r) => r.value === user.role)?.label ||
+                    user.role;
+
                 return (
-                    <Badge variant="outline">
+                    <Badge
+                        variant="outline"
+                        className={getRoleBadgeClass(user.role)}
+                    >
                         {label}
                     </Badge>
                 );
             },
         },
         {
-            header: "Actions",
-            accessorKey: "id",
+            header: 'Actions',
+            accessorKey: 'id',
             cell: (user: User) => (
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => {
-                            setSelectedUser(user);
-                            setIsModalOpen(true);
-                        }}
-                    >
-                        <Edit2 className="size-4" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="text-destructive"
-                        onClick={() => {
-                            setSelectedUser(user);
-                            setIsConfirmOpen(true);
-                        }}
-                    >
-                        <Trash2 className="size-4" />
-                    </Button>
+                <div className="flex items-center gap-1">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setSelectedUser(user);
+                                    setIsModalOpen(true);
+                                }}
+                            >
+                                <Edit2 className="h-4 w-4 text-blue-600" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Modifier</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                onClick={() => {
+                                    setSelectedUser(user);
+                                    setIsConfirmOpen(true);
+                                }}
+                            >
+                                <Trash2 className="h-4 w-4 text-red-600" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Supprimer</TooltipContent>
+                    </Tooltip>
                 </div>
             ),
         },

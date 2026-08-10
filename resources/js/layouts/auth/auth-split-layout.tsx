@@ -14,6 +14,11 @@ export default function AuthSplitLayout({
         <div className="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0">
             <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
                 <div className="absolute inset-0 bg-zinc-900" />
+                <img
+                    src="/img/img_port.jpg"
+                    alt="Port"
+                    className="absolute inset-0 h-full w-full object-cover opacity-50"
+                />
                 <Link
                     href={home()}
                     className="relative z-20 flex items-center text-lg font-medium"

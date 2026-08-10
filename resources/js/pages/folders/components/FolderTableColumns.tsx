@@ -25,7 +25,7 @@ export function getFolderColumns({
             cell: (folder: Folder) => (
                 <Link
                     href={folders.show.url({ folder: folder.id })}
-                    className="font-medium text-primary hover:underline"
+                    className="font-medium text-primary hover:underline lowercase"
                 >
                     {folder.folder_number}
                 </Link>
