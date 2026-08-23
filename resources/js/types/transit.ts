@@ -113,6 +113,7 @@ export interface Folder {
     container_type: ContainerType;
     container_count: number;
     product_id: number;
+    vessel_id?: number | null;
     vessel_name: string;
     vessel?: Vessel;
     eta: string;

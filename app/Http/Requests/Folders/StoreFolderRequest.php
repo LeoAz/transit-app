@@ -16,13 +16,14 @@ class StoreFolderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date_reception_bl' => ['required', 'date'],
+            'bl_received_at' => ['required', 'date'],
             'bl_number' => ['required', 'string', 'max:255'],
             'customer_id' => ['required', 'exists:customers,id'],
             'container_type' => ['required', Rule::enum(ContainerType::class)],
             'container_count' => ['required', 'integer', 'min:1'],
             'product_id' => ['required', 'exists:products,id'],
-            'vessel_name' => ['required', 'string', 'max:255'],
+            'vessel_id' => ['nullable', 'exists:vessels,id'],
+            'vessel_name' => ['required_without:vessel_id', 'nullable', 'string', 'max:255'],
             'eta' => ['required', 'date'],
             'notes' => ['nullable', 'string'],
             'files' => ['nullable', 'array'],

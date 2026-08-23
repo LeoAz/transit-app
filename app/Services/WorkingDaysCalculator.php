@@ -42,4 +42,28 @@ class WorkingDaysCalculator
 
         return $date;
     }
+
+    /**
+     * Compte le nombre de jours ouvrables entre la date de départ et $end (exclusive du jour de départ).
+     */
+    public function countWorkingDaysBetween(Carbon|string $end): int
+    {
+        $end = Carbon::parse($end)->startOfDay();
+        $date = $this->startDate->copy()->startOfDay();
+        $count = 0;
+
+        $holidays = Holiday::pluck('date')
+            ->map(fn ($d) => Carbon::parse($d)->format('Y-m-d'))
+            ->toArray();
+
+        while ($date->lt($end)) {
+            $date->addDay();
+
+            if (! $date->isWeekend() && ! in_array($date->format('Y-m-d'), $holidays, true)) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
 }

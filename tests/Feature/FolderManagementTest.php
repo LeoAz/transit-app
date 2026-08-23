@@ -10,6 +10,7 @@ use App\Models\Folder;
 use App\Models\Holiday;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Vessel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -35,7 +36,7 @@ test('folder can be created (Module 1)', function () {
     $response = $this
         ->actingAs($user)
         ->post('/folders', [
-            'date_reception_bl' => '2026-08-01',
+            'bl_received_at' => '2026-08-01',
             'bl_number' => 'BL-001',
             'customer_id' => $customer->id,
             'container_type' => ContainerType::TWENTY->value,
@@ -97,6 +98,62 @@ test('folder number resets every year', function () {
     Carbon::setTestNow();
 });
 
+test('folder can be created with a referential vessel', function () {
+    $user = User::factory()->create(['role' => UserRole::ADMIN]);
+    $customer = Customer::factory()->create();
+    $product = Product::factory()->create();
+    $vessel = Vessel::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->post('/folders', [
+            'bl_received_at' => '2026-08-01',
+            'bl_number' => 'BL-VESSEL',
+            'customer_id' => $customer->id,
+            'container_type' => ContainerType::TWENTY->value,
+            'container_count' => 5,
+            'product_id' => $product->id,
+            'vessel_id' => $vessel->id,
+            'eta' => '2026-08-10',
+        ]);
+
+    $response->assertSessionHasNoErrors();
+    $this->assertDatabaseHas('folders', [
+        'bl_number' => 'BL-VESSEL',
+        'vessel_id' => $vessel->id,
+        'vessel_name' => $vessel->name,
+    ]);
+});
+
+test('folder can be updated (Module 1)', function () {
+    $user = User::factory()->create(['role' => UserRole::ADMIN]);
+    $folder = Folder::factory()->create(['bl_number' => 'BL-ORIGINAL']);
+    $vessel = Vessel::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->put("/folders/{$folder->id}", [
+            'bl_received_at' => '2026-08-02',
+            'bl_number' => 'BL-UPDATED',
+            'customer_id' => $folder->customer_id,
+            'container_type' => ContainerType::FORTY->value,
+            'container_count' => 3,
+            'product_id' => $folder->product_id,
+            'vessel_id' => $vessel->id,
+            'eta' => '2026-08-15',
+        ]);
+
+    $response->assertSessionHasNoErrors();
+    $this->assertDatabaseHas('folders', [
+        'id' => $folder->id,
+        'bl_number' => 'BL-UPDATED',
+        'container_type' => ContainerType::FORTY->value,
+        'container_count' => 3,
+        'vessel_id' => $vessel->id,
+        'vessel_name' => $vessel->name,
+    ]);
+});
+
 test('folder can be created with files', function () {
     $user = User::factory()->create(['role' => UserRole::ADMIN]);
     $customer = Customer::factory()->create();
@@ -109,7 +166,7 @@ test('folder can be created with files', function () {
     $response = $this
         ->actingAs($user)
         ->post('/folders', [
-            'date_reception_bl' => '2026-08-01',
+            'bl_received_at' => '2026-08-01',
             'bl_number' => 'BL-FILES',
             'customer_id' => $customer->id,
             'container_type' => ContainerType::TWENTY->value,

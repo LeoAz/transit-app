@@ -19,7 +19,13 @@ final readonly class StoreFolderAction
                 'bl_received_at' => $data->blReceivedAt,
                 'bl_number' => $data->blNumber,
                 'customer_id' => $data->customerId,
-                'shipping_company_id' => $data->shippingCompanyId,
+                'container_type' => $data->containerType,
+                'container_count' => $data->containerCount,
+                'product_id' => $data->productId,
+                'vessel_id' => $data->vesselId,
+                'vessel_name' => $data->vesselName,
+                'eta' => $data->eta,
+                'notes' => $data->notes,
             ]);
 
             if (! empty($data->documents)) {

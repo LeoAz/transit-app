@@ -23,7 +23,7 @@ class FolderFactory extends Factory
      */
     public function definition(): array
     {
-        $vessel = Vessel::inRandomOrder()->first();
+        $vessel = Vessel::factory()->create();
 
         return [
             'folder_number' => fake()->unique()->bothify('FLD-2026-####'),
@@ -33,7 +33,8 @@ class FolderFactory extends Factory
             'container_type' => fake()->randomElement(ContainerType::cases()),
             'container_count' => fake()->numberBetween(1, 10),
             'product_id' => Product::factory(),
-            'vessel_name' => $vessel ? $vessel->name : fake()->words(2, true),
+            'vessel_id' => $vessel->id,
+            'vessel_name' => $vessel->name,
             'eta' => fake()->dateTimeBetween('now', '+1 month'),
             'ata' => fake()->optional()->dateTimeBetween('-1 week', 'now'),
             'notes' => fake()->sentence(),

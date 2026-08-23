@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Folders;
 
+use App\Enums\ContainerType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -35,9 +36,15 @@ class UpdateFolderRequest extends FormRequest
                 Rule::unique('folders', 'bl_number')->ignore($folderId),
             ],
             'customer_id' => ['required', 'integer', 'exists:customers,id'],
-            'shipping_company_id' => ['required', 'integer', 'exists:shipping_companies,id'],
-            'documents' => ['nullable', 'array'],
-            'documents.*' => ['file', 'mimes:pdf,png,jpg,jpeg', 'max:10240'],
+            'container_type' => ['required', Rule::enum(ContainerType::class)],
+            'container_count' => ['required', 'integer', 'min:1'],
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'vessel_id' => ['nullable', 'exists:vessels,id'],
+            'vessel_name' => ['required_without:vessel_id', 'nullable', 'string', 'max:255'],
+            'eta' => ['required', 'date'],
+            'notes' => ['nullable', 'string'],
+            'files' => ['nullable', 'array'],
+            'files.*' => ['file', 'max:10240'],
         ];
     }
 }

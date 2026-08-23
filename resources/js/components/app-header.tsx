@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Bell, CheckCheck, Database, Folder, LayoutGrid, Menu, Users } from 'lucide-react';
+import { Bell, CheckCheck, Database, FileBarChart, Folder, LayoutGrid, Menu, Users } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -36,6 +36,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import * as folders from '@/routes/folders/index';
+import reports from '@/routes/reports';
 import { index as usersIndex } from '@/routes/users/index';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
@@ -66,6 +67,11 @@ const mainNavItems: NavItem[] = [
         title: 'Référentiel',
         href: '/referential/customers',
         icon: Database,
+    },
+    {
+        title: 'Rapports',
+        href: reports.index.url(),
+        icon: FileBarChart,
     },
     {
         title: 'Utilisateurs',

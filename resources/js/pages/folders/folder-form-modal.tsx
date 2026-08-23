@@ -2,6 +2,7 @@ import { useForm } from '@inertiajs/react';
 import {
     BlocksIcon,
     PackageIcon,
+    ShipIcon,
     UsersIcon,
 } from 'lucide-react';
 import * as React from 'react';
@@ -39,6 +40,7 @@ export function FolderFormModal({
     folder,
     customers = [],
     products = [],
+    vessels = [],
     containerTypes = [],
 }: FolderFormModalProps) {
     const isEditing = Boolean(folder);
@@ -48,6 +50,7 @@ export function FolderFormModal({
         bl_received_at: folder?.bl_received_at ?? '',
         customer_id: folder?.customer_id ? folder.customer_id.toString() : '',
         product_id: folder?.product_id ? folder.product_id.toString() : '',
+        vessel_id: folder?.vessel_id ? folder.vessel_id.toString() : '',
         vessel_name: folder?.vessel_name ?? '',
         container_type: folder?.container_type
             ? folder.container_type.toString()
@@ -68,6 +71,7 @@ export function FolderFormModal({
                 product_id: folder.product_id
                     ? folder.product_id.toString()
                     : '',
+                vessel_id: folder.vessel_id ? folder.vessel_id.toString() : '',
                 vessel_name: folder.vessel_name ?? '',
                 container_type: folder.container_type
                     ? folder.container_type.toString()
@@ -80,6 +84,16 @@ export function FolderFormModal({
             reset();
         }
     }, [folder]);
+
+    const handleVesselChange = (val: string) => {
+        setData((current) => ({
+            ...current,
+            vessel_id: val,
+            vessel_name:
+                vessels.find((v) => v.id.toString() === val)?.name ??
+                current.vessel_name,
+        }));
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -212,20 +226,40 @@ export function FolderFormModal({
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="vessel_name">Navire *</Label>
-                                <Input
-                                    id="vessel_name"
-                                    value={data.vessel_name}
-                                    onChange={(e) =>
-                                        setData('vessel_name', e.target.value)
-                                    }
-                                    placeholder="Nom du navire"
-                                    className="h-9 text-sm"
-                                />
-                                {errors.vessel_name && (
-                                    <p className="text-xs text-destructive">
-                                        {errors.vessel_name}
-                                    </p>
+                                <Label htmlFor="vessel_id">Navire *</Label>
+                                {vessels.length > 0 ? (
+                                    <IconSelect
+                                        id="vessel_id"
+                                        options={vessels.map((v) => ({
+                                            value: v.id.toString(),
+                                            label: v.name,
+                                            icon: ShipIcon,
+                                        }))}
+                                        value={data.vessel_id}
+                                        onValueChange={handleVesselChange}
+                                        placeholder="Sélectionner un navire"
+                                        error={errors.vessel_id ?? errors.vessel_name}
+                                    />
+                                ) : (
+                                    <>
+                                        <Input
+                                            id="vessel_name"
+                                            value={data.vessel_name}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'vessel_name',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="Nom du navire"
+                                            className="h-9 text-sm"
+                                        />
+                                        {errors.vessel_name && (
+                                            <p className="text-xs text-destructive">
+                                                {errors.vessel_name}
+                                            </p>
+                                        )}
+                                    </>
                                 )}
                             </div>
 
